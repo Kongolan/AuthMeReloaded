@@ -17,19 +17,19 @@ public class PlayerAuth {
     private String vBhash = null;
     private int groupId = -1;
     private String email = "your@email.com";
-    private String realName = "";
 
-    public PlayerAuth(String nickname, String hash, String ip, long lastLogin, String email, String realName) {
+    public PlayerAuth(String nickname, String hash, String ip, long lastLogin,
+            String email) {
         this.nickname = nickname;
         this.hash = hash;
         this.ip = ip;
         this.lastLogin = lastLogin;
         this.email = email;
-        this.realName = realName;
 
     }
 
-    public PlayerAuth(String nickname, double x, double y, double z, String world) {
+    public PlayerAuth(String nickname, double x, double y, double z,
+            String world) {
         this.nickname = nickname;
         this.x = x;
         this.y = y;
@@ -39,7 +39,8 @@ public class PlayerAuth {
 
     }
 
-    public PlayerAuth(String nickname, String hash, String ip, long lastLogin, double x, double y, double z, String world, String email, String realName) {
+    public PlayerAuth(String nickname, String hash, String ip, long lastLogin,
+            double x, double y, double z, String world, String email) {
         this.nickname = nickname;
         this.hash = hash;
         this.ip = ip;
@@ -49,11 +50,12 @@ public class PlayerAuth {
         this.z = z;
         this.world = world;
         this.email = email;
-        this.realName = realName;
 
     }
 
-    public PlayerAuth(String nickname, String hash, String salt, int groupId, String ip, long lastLogin, double x, double y, double z, String world,  String email, String realName) {
+    public PlayerAuth(String nickname, String hash, String salt, int groupId,
+            String ip, long lastLogin, double x, double y, double z,
+            String world, String email) {
         this.nickname = nickname;
         this.hash = hash;
         this.ip = ip;
@@ -65,32 +67,33 @@ public class PlayerAuth {
         this.salt = salt;
         this.groupId = groupId;
         this.email = email;
-        this.realName = realName;
 
     }
 
-    public PlayerAuth(String nickname, String hash, String salt, int groupId , String ip, long lastLogin, String realName) {
+    public PlayerAuth(String nickname, String hash, String salt, int groupId,
+            String ip, long lastLogin) {
         this.nickname = nickname;
         this.hash = hash;
         this.ip = ip;
-        this.lastLogin = lastLogin;  
+        this.lastLogin = lastLogin;
         this.salt = salt;
         this.groupId = groupId;
-        this.realName = realName;
 
     }
 
-    public PlayerAuth(String nickname, String hash, String salt, String ip, long lastLogin, String realName) {
+    public PlayerAuth(String nickname, String hash, String salt, String ip,
+            long lastLogin) {
         this.nickname = nickname;
         this.hash = hash;
         this.ip = ip;
-        this.lastLogin = lastLogin;  
+        this.lastLogin = lastLogin;
         this.salt = salt;
-        this.realName = realName;
 
     }
 
-    public PlayerAuth(String nickname, String hash, String salt, String ip, long lastLogin, double x, double y, double z, String world, String email, String realName) {
+    public PlayerAuth(String nickname, String hash, String salt, String ip,
+            long lastLogin, double x, double y, double z, String world,
+            String email) {
         this.nickname = nickname;
         this.hash = hash;
         this.ip = ip;
@@ -101,27 +104,27 @@ public class PlayerAuth {
         this.world = world;
         this.salt = salt;
         this.email = email;
-        this.realName = realName;
+
     }
 
     public PlayerAuth(String nickname, String ip, long lastLogin) {
-    	this.nickname = nickname;
-    	this.ip = ip;
-    	this.lastLogin = lastLogin;
+        this.nickname = nickname;
+        this.ip = ip;
+        this.lastLogin = lastLogin;
 
     }
 
     public PlayerAuth(String nickname, String hash, String ip, long lastLogin) {
-    	this.nickname = nickname;
-    	this.ip = ip;
-    	this.lastLogin = lastLogin;
-    	this.hash = hash;
+        this.nickname = nickname;
+        this.ip = ip;
+        this.lastLogin = lastLogin;
+        this.hash = hash;
     }
 
-	public String getIp() {
-		if (ip == null || ip.isEmpty())
-			ip = "127.0.0.1";
-		return ip;
+    public String getIp() {
+        if (ip == null || ip.isEmpty())
+            ip = "127.0.0.1";
+        return ip;
     }
 
     public String getNickname() {
@@ -129,17 +132,17 @@ public class PlayerAuth {
     }
 
     public String getHash() {
-    	if (Settings.getPasswordHash == HashAlgorithm.MD5VB) {
-            if(salt != null && !salt.isEmpty() && Settings.getPasswordHash == HashAlgorithm.MD5VB) {
-            	vBhash = "$MD5vb$"+salt+"$"+hash;
+        if (Settings.getPasswordHash == HashAlgorithm.MD5VB) {
+            if (salt != null && !salt.isEmpty() && Settings.getPasswordHash == HashAlgorithm.MD5VB) {
+                vBhash = "$MD5vb$" + salt + "$" + hash;
                 return vBhash;
             }
-    	}
+        }
         return hash;
     }
 
     public String getSalt() {
-    	return this.salt;
+        return this.salt;
     }
 
     public int getGroupId() {
@@ -149,31 +152,38 @@ public class PlayerAuth {
     public double getQuitLocX() {
         return x;
     }
+
     public double getQuitLocY() {
         return y;
     }
+
     public double getQuitLocZ() {
         return z;
     }
+
     public String getEmail() {
-    	return email;
+        return email;
     }
+
     public void setQuitLocX(double d) {
         this.x = d;
     }
+
     public void setQuitLocY(double d) {
         this.y = d;
     }
+
     public void setQuitLocZ(double d) {
         this.z = d;
-    }  
+    }
+
     public long getLastLogin() {
-    	try {
-    		if (Long.valueOf(lastLogin) == null)
-    			lastLogin = 0L;
-    	} catch (NullPointerException e) {
-    		lastLogin = 0L;
-    	}
+        try {
+            if (Long.valueOf(lastLogin) == null)
+                lastLogin = 0L;
+        } catch (NullPointerException e) {
+            lastLogin = 0L;
+        }
         return lastLogin;
     }
 
@@ -190,11 +200,11 @@ public class PlayerAuth {
     }
 
     public void setEmail(String email) {
-    	this.email = email;
+        this.email = email;
     }
 
     public void setSalt(String salt) {
-    	this.salt = salt;
+        this.salt = salt;
     }
 
     @Override
@@ -214,23 +224,23 @@ public class PlayerAuth {
         return hashCode;
     }
 
-	public void setWorld(String world) {
-		this.world = world;
-	}
+    public void setWorld(String world) {
+        this.world = world;
+    }
 
-	public String getWorld() {
-		return world;
-	}
+    public String getWorld() {
+        return world;
+    }
 
-	@Override
-	public String toString() {
-		String s = "Player : " + nickname + " ! IP : " + ip + " ! LastLogin : " + lastLogin + " ! LastPosition : " + x + "," + y + "," + z + "," + world
-		+ " ! Email : " + email + " ! Hash : " + hash + " ! Salt : " + salt + " ! RealName : " + realName;
-		return s;
-			
-	}
+    @Override
+    public String toString() {
+        String s = "Player : " + nickname + " ! IP : " + ip + " ! LastLogin : " + lastLogin + " ! LastPosition : " + x + "," + y + "," + z + "," + world + " ! Email : " + email + " ! Hash : " + hash + " ! Salt : " + salt;
+        return s;
 
-	public String getRealname() {
-		return realName;
-	}
+    }
+
+    public void setName(String nickname) {
+        this.nickname = nickname;
+    }
+
 }

@@ -1,5 +1,6 @@
 package fr.xephi.authme.process;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 
@@ -12,10 +13,12 @@ import fr.xephi.authme.settings.Settings;
 
 /**
  * 
- * @authors Xephi59, <a href="http://dev.bukkit.org/profiles/Possible/">Possible</a>
+ * @authors Xephi59, <a
+ *          href="http://dev.bukkit.org/profiles/Possible/">Possible</a>
  *
  */
 public class Management extends Thread {
+
     public DataSource database;
     public AuthMe plugin;
     public static RandomString rdm = new RandomString(Settings.captchaLength);
@@ -30,11 +33,23 @@ public class Management extends Thread {
     public void run() {
     }
 
-    public void performLogin(final Player player, final String password, final boolean forceLogin) {
-    	new AsyncronousLogin(player, password, forceLogin, plugin, database).process();
+    public void performLogin(final Player player, final String password,
+            final boolean forceLogin) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable(){
+            @Override
+            public void run() {
+                new AsyncronousLogin(player, password, forceLogin, plugin, database).process();
+            }
+        });
     }
 
-    public void performRegister(final Player player, final String password, final String email) {
-    	new AsyncronousRegister(player, password, email, plugin, database).process();
+    public void performRegister(final Player player, final String password,
+            final String email) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable(){
+            @Override
+            public void run() {
+                new AsyncronousRegister(player, password, email, plugin, database).process();
+            }
+        });
     }
 }

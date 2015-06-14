@@ -10,8 +10,9 @@ public class xAuthConverter implements Converter {
     public AuthMe plugin;
     public DataSource database;
     public CommandSender sender;
-    
-    public xAuthConverter(AuthMe plugin, DataSource database, CommandSender sender) {
+
+    public xAuthConverter(AuthMe plugin, DataSource database,
+            CommandSender sender) {
         this.plugin = plugin;
         this.database = database;
         this.sender = sender;

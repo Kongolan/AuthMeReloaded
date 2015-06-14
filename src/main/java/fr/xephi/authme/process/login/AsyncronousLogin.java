@@ -7,6 +7,7 @@ import me.muizers.Notifications.Notification;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.xephi.authme.AuthMe;
 import fr.xephi.authme.ConsoleLogger;
@@ -22,17 +23,19 @@ import fr.xephi.authme.settings.Settings;
 import fr.xephi.authme.task.MessageTask;
 
 public class AsyncronousLogin {
+
     protected Player player;
     protected String name;
-    protected String password;
     protected String realName;
+    protected String password;
     protected boolean forceLogin;
     private AuthMe plugin;
     private DataSource database;
     private static RandomString rdm = new RandomString(Settings.captchaLength);
     private Messages m = Messages.getInstance();
 
-    public AsyncronousLogin(Player player, String password, boolean forceLogin, AuthMe plugin, DataSource data) {
+    public AsyncronousLogin(Player player, String password, boolean forceLogin,
+            AuthMe plugin, DataSource data) {
         this.player = player;
         this.password = password;
         name = player.getName().toLowerCase();
@@ -43,8 +46,9 @@ public class AsyncronousLogin {
     }
 
     protected String getIP() {
-    	return plugin.getIP(player);
+        return plugin.getIP(player);
     }
+
     protected boolean needsCaptcha() {
         if (Settings.useCaptcha) {
             if (!plugin.captcha.containsKey(name)) {
@@ -56,8 +60,8 @@ public class AsyncronousLogin {
             }
             if (plugin.captcha.containsKey(name) && plugin.captcha.get(name) >= Settings.maxLoginTry) {
                 plugin.cap.put(name, rdm.nextString());
-                for (String s : m._("usage_captcha")) {
-                	player.sendMessage(s.replace("THE_CAPTCHA", plugin.cap.get(name)).replace("<theCaptcha>", plugin.cap.get(name)));
+                for (String s : m.send("usage_captcha")) {
+                    player.sendMessage(s.replace("THE_CAPTCHA", plugin.cap.get(name)).replace("<theCaptcha>", plugin.cap.get(name)));
                 }
                 return true;
             } else if (plugin.captcha.containsKey(name) && plugin.captcha.get(name) >= Settings.maxLoginTry) {
@@ -72,41 +76,42 @@ public class AsyncronousLogin {
     }
 
     /**
-     * Checks the precondition for authentication (like user known) and returns the playerAuth-State
+     * Checks the precondition for authentication (like user known) and returns
+     * the playerAuth-State
      */
     protected PlayerAuth preAuth() {
         if (PlayerCache.getInstance().isAuthenticated(name)) {
-        	m._(player, "logged_in");
+            m.send(player, "logged_in");
             return null;
         }
         if (!database.isAuthAvailable(name)) {
-        	m._(player, "user_unknown");
-        	if(LimboCache.getInstance().hasLimboPlayer(name)) {
-        		Bukkit.getScheduler().cancelTask(LimboCache.getInstance().getLimboPlayer(name).getMessageTaskId());
-        		String[] msg;
-                if(Settings.emailRegistration) {
-                	msg = m._("reg_email_msg");
+            m.send(player, "user_unknown");
+            if (LimboCache.getInstance().hasLimboPlayer(name)) {
+            	LimboCache.getInstance().getLimboPlayer(name).getMessageTaskId().cancel();
+                String[] msg;
+                if (Settings.emailRegistration) {
+                    msg = m.send("reg_email_msg");
                 } else {
-                	msg = m._("reg_msg");
+                    msg = m.send("reg_msg");
                 }
-                int msgT = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new MessageTask(plugin, name, msg, Settings.getWarnMessageInterval));
+                BukkitTask msgT = Bukkit.getScheduler().runTask(plugin, new MessageTask(plugin, name, msg, Settings.getWarnMessageInterval));
                 LimboCache.getInstance().getLimboPlayer(name).setMessageTaskId(msgT);
-        	}
+            }
             return null;
         }
         if (Settings.getMaxLoginPerIp > 0 && !plugin.authmePermissible(player, "authme.allow2accounts") && !getIP().equalsIgnoreCase("127.0.0.1") && !getIP().equalsIgnoreCase("localhost")) {
-        	if (plugin.isLoggedIp(realName, getIP())) {
-            	m._(player, "logged_in");
-            	return null;
-        	}
+            if (plugin.isLoggedIp(name, getIP())) {
+                m.send(player, "logged_in");
+                return null;
+            }
         }
         PlayerAuth pAuth = database.getAuth(name);
         if (pAuth == null) {
-        	m._(player, "user_unknown");
+            m.send(player, "user_unknown");
             return null;
         }
         if (!Settings.getMySQLColumnGroup.isEmpty() && pAuth.getGroupId() == Settings.getNonActivatedGroup) {
-        	m._(player, "vb_nonActiv");
+            m.send(player, "vb_nonActiv");
             return null;
         }
         return pAuth;
@@ -121,15 +126,15 @@ public class AsyncronousLogin {
         String email = pAuth.getEmail();
         boolean passwordVerified = true;
         if (!forceLogin)
-        	try {
-        		passwordVerified = PasswordSecurity.comparePasswordWithHash(password, hash, realName);
-        	} catch (Exception ex) {
-        		ConsoleLogger.showError(ex.getMessage());
-        		m._(player, "error");
-        		return;
-        	}
+            try {
+                passwordVerified = PasswordSecurity.comparePasswordWithHash(password, hash, realName);
+            } catch (Exception ex) {
+                ConsoleLogger.showError(ex.getMessage());
+                m.send(player, "error");
+                return;
+            }
         if (passwordVerified && player.isOnline()) {
-            PlayerAuth auth = new PlayerAuth(name, hash, getIP(), new Date().getTime(), email, realName);
+            PlayerAuth auth = new PlayerAuth(name, hash, getIP(), new Date().getTime(), email);
             database.updateSession(auth);
 
             if (Settings.useCaptcha) {
@@ -142,7 +147,7 @@ public class AsyncronousLogin {
             }
 
             player.setNoDamageTicks(0);
-            m._(player, "login");
+            m.send(player, "login");
 
             displayOtherAccounts(auth, player);
 
@@ -158,12 +163,16 @@ public class AsyncronousLogin {
             database.setLogged(name);
             plugin.otherAccounts.addPlayer(player.getUniqueId());
 
-            // As the scheduling executes the Task most likely after the current task, we schedule it in the end
-            // so that we can be sure, and have not to care if it might be processed in other order.
+            // As the scheduling executes the Task most likely after the current
+            // task, we schedule it in the end
+            // so that we can be sure, and have not to care if it might be
+            // processed in other order.
             ProcessSyncronousPlayerLogin syncronousPlayerLogin = new ProcessSyncronousPlayerLogin(player, plugin, database);
             if (syncronousPlayerLogin.getLimbo() != null) {
-                player.getServer().getScheduler().cancelTask(syncronousPlayerLogin.getLimbo().getTimeoutTaskId());
-                player.getServer().getScheduler().cancelTask(syncronousPlayerLogin.getLimbo().getMessageTaskId());
+                if (syncronousPlayerLogin.getLimbo().getTimeoutTaskId() != null)
+                    syncronousPlayerLogin.getLimbo().getTimeoutTaskId().cancel();
+                if (syncronousPlayerLogin.getLimbo().getMessageTaskId() != null)
+                    syncronousPlayerLogin.getLimbo().getMessageTaskId().cancel();
             }
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, syncronousPlayerLogin);
         } else if (player.isOnline()) {
@@ -171,23 +180,24 @@ public class AsyncronousLogin {
                 ConsoleLogger.info(player.getName() + " used the wrong password");
             if (Settings.isKickOnWrongPasswordEnabled) {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+
                     @Override
                     public void run() {
                         if (AuthMePlayerListener.gameMode != null && AuthMePlayerListener.gameMode.containsKey(name)) {
                             player.setGameMode(AuthMePlayerListener.gameMode.get(name));
                         }
-                        player.kickPlayer(m._("wrong_pwd")[0]);
+                        player.kickPlayer(m.send("wrong_pwd")[0]);
                     }
                 });
             } else {
-            	m._(player, "wrong_pwd");
+                m.send(player, "wrong_pwd");
                 return;
             }
         } else {
             ConsoleLogger.showError("Player " + name + " wasn't online during login process, aborted... ");
         }
     }
-    
+
     public void displayOtherAccounts(PlayerAuth auth, Player p) {
         if (!Settings.displayOtherAccounts) {
             return;
@@ -196,7 +206,8 @@ public class AsyncronousLogin {
             return;
         }
         List<String> auths = this.database.getAllAuthsByName(auth);
-        //List<String> uuidlist = plugin.otherAccounts.getAllPlayersByUUID(player.getUniqueId());
+        // List<String> uuidlist =
+        // plugin.otherAccounts.getAllPlayersByUUID(player.getUniqueId());
         if (auths.isEmpty() || auths == null) {
             return;
         }
@@ -204,7 +215,8 @@ public class AsyncronousLogin {
             return;
         }
         String message = "[AuthMe] ";
-        //String uuidaccounts = "[AuthMe] PlayerNames has %size% links to this UUID : ";
+        // String uuidaccounts =
+        // "[AuthMe] PlayerNames has %size% links to this UUID : ";
         int i = 0;
         for (String account : auths) {
             i++;
@@ -215,23 +227,18 @@ public class AsyncronousLogin {
                 message = message + ".";
             }
         }
-        /*TODO: Active uuid system
-        i = 0;
-        for (String account : uuidlist) {
-            i++;
-            uuidaccounts = uuidaccounts + account;
-            if (i != auths.size()) {
-            	uuidaccounts = uuidaccounts + ", ";
-            } else {
-            	uuidaccounts = uuidaccounts + ".";
-            }
-        }*/
+        /*
+         * TODO: Active uuid system i = 0; for (String account : uuidlist) {
+         * i++; uuidaccounts = uuidaccounts + account; if (i != auths.size()) {
+         * uuidaccounts = uuidaccounts + ", "; } else { uuidaccounts =
+         * uuidaccounts + "."; } }
+         */
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             if (plugin.authmePermissible(player, "authme.seeOtherAccounts")) {
-                player.sendMessage("[AuthMe] The player " + auth.getNickname() + " has "
-                        + auths.size() + " accounts");
+                player.sendMessage("[AuthMe] The player " + auth.getNickname() + " has " + auths.size() + " accounts");
                 player.sendMessage(message);
-                //player.sendMessage(uuidaccounts.replace("%size%", ""+uuidlist.size()));
+                // player.sendMessage(uuidaccounts.replace("%size%",
+                // ""+uuidlist.size()));
             }
         }
     }

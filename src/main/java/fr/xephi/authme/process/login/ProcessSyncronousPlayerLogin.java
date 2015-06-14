@@ -24,6 +24,7 @@ import fr.xephi.authme.listener.AuthMePlayerListener;
 import fr.xephi.authme.settings.Settings;
 
 public class ProcessSyncronousPlayerLogin implements Runnable {
+
     private LimboPlayer limbo;
     private Player player;
     private String name;
@@ -31,16 +32,18 @@ public class ProcessSyncronousPlayerLogin implements Runnable {
     private AuthMe plugin;
     private DataSource database;
     private PluginManager pm;
-    private FileCache playerCache = new FileCache();
+    private FileCache playerCache;
 
-    public ProcessSyncronousPlayerLogin(Player player, AuthMe plugin, DataSource data) {
-    	this.plugin = plugin;
-    	this.database = data;
-    	this.pm = plugin.getServer().getPluginManager();
+    public ProcessSyncronousPlayerLogin(Player player, AuthMe plugin,
+            DataSource data) {
+        this.plugin = plugin;
+        this.database = data;
+        this.pm = plugin.getServer().getPluginManager();
         this.player = player;
         this.name = player.getName().toLowerCase();
         this.limbo = LimboCache.getInstance().getLimboPlayer(name);
         this.auth = database.getAuth(name);
+        this.playerCache = new FileCache(plugin);
     }
 
     public LimboPlayer getLimbo() {
@@ -93,40 +96,42 @@ public class ProcessSyncronousPlayerLogin implements Runnable {
     }
 
     protected void forceCommands() {
-    	for (String command : Settings.forceCommands) {
-    		try {
-    			player.performCommand(command.replace("%p", player.getName()));
-    		} catch (Exception e) {}
-    	}
-    	for (String command : Settings.forceCommandsAsConsole) {
-    		Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replace("%p", player.getName()));
-    	}
+        for (String command : Settings.forceCommands) {
+            try {
+                player.performCommand(command.replace("%p", player.getName()));
+            } catch (Exception e) {
+            }
+        }
+        for (String command : Settings.forceCommandsAsConsole) {
+            Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replace("%p", player.getName()));
+        }
     }
 
     @Override
     public void run() {
-         // Limbo contains the State of the Player before /login
+        // Limbo contains the State of the Player before /login
         if (limbo != null) {
             // Op & Flying
             restoreOpState();
 
             /*
-             * Restore Inventories and GameMode
-             * We need to restore them before teleport the player
-             * Cause in AuthMePlayerListener, we call ProtectInventoryEvent after Teleporting
-             * Also it's the current world inventory !
+             * Restore Inventories and GameMode We need to restore them before
+             * teleport the player Cause in AuthMePlayerListener, we call
+             * ProtectInventoryEvent after Teleporting Also it's the current
+             * world inventory !
              */
             if (!Settings.forceOnlyAfterLogin) {
-            	player.setGameMode(limbo.getGameMode());
-                // Inventory - Make it after restore GameMode , cause we need to restore the
+                player.setGameMode(limbo.getGameMode());
+                // Inventory - Make it after restore GameMode , cause we need to
+                // restore the
                 // right inventory in the right gamemode
                 if (Settings.protectInventoryBeforeLogInEnabled && player.hasPlayedBefore()) {
                     restoreInventory();
                 }
-            }
-            else {
-                // Inventory - Make it before force the survival GameMode to cancel all
-            	// inventory problem
+            } else {
+                // Inventory - Make it before force the survival GameMode to
+                // cancel all
+                // inventory problem
                 if (Settings.protectInventoryBeforeLogInEnabled && player.hasPlayedBefore()) {
                     restoreInventory();
                 }
@@ -150,27 +155,28 @@ public class ProcessSyncronousPlayerLogin implements Runnable {
                 }
             }
 
-            // Re-Force Survival GameMode if we need due to world change specification
+            // Re-Force Survival GameMode if we need due to world change
+            // specification
             if (Settings.isForceSurvivalModeEnabled)
-            	Utils.forceGM(player);
-            
+                Utils.forceGM(player);
+
             // Restore Permission Group
             Utils.getInstance().setGroup(player, groupType.LOGGEDIN);
 
             // Cleanup no longer used temporary data
             LimboCache.getInstance().deleteLimboPlayer(name);
-            if (playerCache.doesCacheExist(name)) {
-                playerCache.removeCache(name);
+            if (playerCache.doesCacheExist(player)) {
+                playerCache.removeCache(player);
             }
         }
 
         // We can now display the join message
         if (AuthMePlayerListener.joinMessage.containsKey(name) && AuthMePlayerListener.joinMessage.get(name) != null && !AuthMePlayerListener.joinMessage.get(name).isEmpty()) {
-        	for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-        		if (p.isOnline())
-        			p.sendMessage(AuthMePlayerListener.joinMessage.get(name));
-        	}
-        	AuthMePlayerListener.joinMessage.remove(name);
+            for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+                if (p.isOnline())
+                    p.sendMessage(AuthMePlayerListener.joinMessage.get(name));
+            }
+            AuthMePlayerListener.joinMessage.remove(name);
         }
 
         if (Settings.applyBlindEffect)
@@ -181,14 +187,14 @@ public class ProcessSyncronousPlayerLogin implements Runnable {
         player.saveData();
 
         // Login is finish, display welcome message
-        if(Settings.useWelcomeMessage)
-            if(Settings.broadcastWelcomeMessage) {
+        if (Settings.useWelcomeMessage)
+            if (Settings.broadcastWelcomeMessage) {
                 for (String s : Settings.welcomeMsg) {
-            		Bukkit.getServer().broadcastMessage(plugin.replaceAllInfos(s, player));
+                    Bukkit.getServer().broadcastMessage(plugin.replaceAllInfos(s, player));
                 }
             } else {
                 for (String s : Settings.welcomeMsg) {
-                	player.sendMessage(plugin.replaceAllInfos(s, player));
+                    player.sendMessage(plugin.replaceAllInfos(s, player));
                 }
             }
 

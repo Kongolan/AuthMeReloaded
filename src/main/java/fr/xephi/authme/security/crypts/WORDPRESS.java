@@ -7,6 +7,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class WORDPRESS implements EncryptionMethod {
+
     private static String itoa64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private int iterationCountLog2 = 8;
     private SecureRandom randomGen = new SecureRandom();
@@ -99,17 +100,18 @@ public class WORDPRESS implements EncryptionMethod {
     }
 
     @Override
-    public String getHash(String password, String salt, String name) throws NoSuchAlgorithmException {
+    public String getHash(String password, String salt, String name)
+            throws NoSuchAlgorithmException {
         byte random[] = new byte[6];
         this.randomGen.nextBytes(random);
         return crypt(password, gensaltPrivate(stringToUtf8(new String(random))));
     }
 
-	@Override
-	public boolean comparePassword(String hash, String password,
-			String playerName) throws NoSuchAlgorithmException {
-		String comparedHash = crypt(password, hash);
-		return comparedHash.equals(hash);
-	}
+    @Override
+    public boolean comparePassword(String hash, String password,
+            String playerName) throws NoSuchAlgorithmException {
+        String comparedHash = crypt(password, hash);
+        return comparedHash.equals(hash);
+    }
 
 }

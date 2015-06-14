@@ -3,6 +3,7 @@ package fr.xephi.authme.cache.limbo;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitTask;
 
 public class LimboPlayer {
 
@@ -10,14 +11,16 @@ public class LimboPlayer {
     private ItemStack[] inventory;
     private ItemStack[] armour;
     private Location loc = null;
-    private int timeoutTaskId = -1;
-    private int messageTaskId = -1;
+    private BukkitTask timeoutTaskId = null;
+    private BukkitTask messageTaskId = null;
     private GameMode gameMode = GameMode.SURVIVAL;
     private boolean operator = false;
     private String group = "";
     private boolean flying = false;
 
-    public LimboPlayer(String name, Location loc, ItemStack[] inventory, ItemStack[] armour, GameMode gameMode, boolean operator, String group, boolean flying) {
+    public LimboPlayer(String name, Location loc, ItemStack[] inventory,
+            ItemStack[] armour, GameMode gameMode, boolean operator,
+            String group, boolean flying) {
         this.name = name;
         this.loc = loc;
         this.inventory = inventory;
@@ -28,7 +31,8 @@ public class LimboPlayer {
         this.flying = flying;
     }
 
-    public LimboPlayer(String name, Location loc, GameMode gameMode, boolean operator, String group, boolean flying) {
+    public LimboPlayer(String name, Location loc, GameMode gameMode,
+            boolean operator, String group, boolean flying) {
         this.name = name;
         this.loc = loc;
         this.gameMode = gameMode;
@@ -59,11 +63,11 @@ public class LimboPlayer {
     }
 
     public void setArmour(ItemStack[] armour) {
-    	this.armour = armour;
+        this.armour = armour;
     }
 
     public void setInventory(ItemStack[] inventory) {
-    	this.inventory = inventory;
+        this.inventory = inventory;
     }
 
     public GameMode getGameMode() {
@@ -78,24 +82,24 @@ public class LimboPlayer {
         return group;
     }
 
-	public void setTimeoutTaskId(int i) {
-		this.timeoutTaskId = i;
-	}
+    public void setTimeoutTaskId(BukkitTask i) {
+        this.timeoutTaskId = i;
+    }
 
-	public int getTimeoutTaskId() {
-		return timeoutTaskId;
-	}
+    public BukkitTask getTimeoutTaskId() {
+        return timeoutTaskId;
+    }
 
-	public void setMessageTaskId(int messageTaskId) {
-		this.messageTaskId = messageTaskId;
-	}
+    public void setMessageTaskId(BukkitTask messageTaskId) {
+        this.messageTaskId = messageTaskId;
+    }
 
-	public int getMessageTaskId() {
-		return messageTaskId;
-	}
+    public BukkitTask getMessageTaskId() {
+        return messageTaskId;
+    }
 
-	public boolean isFlying() {
-		return flying;
-	}
+    public boolean isFlying() {
+        return flying;
+    }
 
 }

@@ -27,7 +27,7 @@ public class CRAZYCRYPT1 implements EncryptionMethod {
             String playerName) throws NoSuchAlgorithmException {
         return hash.equals(getHash(password, null, playerName));
     }
-    
+
     public static String byteArrayToHexString(final byte... args) {
         final char[] chars = new char[args.length * 2];
         for (int i = 0; i < args.length; i++) {

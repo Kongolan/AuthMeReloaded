@@ -74,7 +74,7 @@ settings:
         # And try to login with an another IP Address?
         sessionExpireOnIpChange: false
     restrictions:
-        # Can unregistered players chat, care , that block all commands except followers
+        # Can unregistered/unlogged players chat and see chat, care , that block all commands except followers
         allowChat: false
         # Commands allowed when a player is unlogged
         allowCommands:
@@ -250,6 +250,10 @@ settings:
     forceCommands: []
     # Force these commands after /login as a server console, without any '/', use %p for replace with player name
     forceCommandsAsConsole: []
+    # Force these commands after /register, without any '/', use %p for replace with player name
+    forceRegisterCommands: []
+    # Force these commands after /register as a server console, without any '/', use %p for replace with player name
+    forceRegisterCommandsAsConsole: []
     # Do we need to display the welcome message (welcome.txt) after a register or a login?
     # You can use colors in this welcome.txt + some replaced strings : 
     # {PLAYER} : player name, {ONLINE} : display number of online players, {MAXPLAYERS} : display server slots,
@@ -359,6 +363,11 @@ Email:
     recallPlayers: false
     # Delay in minute for the recall scheduler
     delayRecall: 5
+    # Blacklist these domains for emails
+    emailBlacklisted:
+    - 10minutemail.com
+    # WhiteList only these domains for emails
+    emailWhitelisted: []
 Hooks:
     # Do we need to hook with multiverse for spawn checking?
     multiverse: true
@@ -372,6 +381,8 @@ Hooks:
     disableSocialSpy: true
     # Do we need to force /motd Essentials command on join ?
     useEssentialsMotd: false
+    # Do we need to cache custom Attributes ?
+    customAttributes: false
 Performances:
     # HIGHLY recommended to use this! This will increase database performance
     # Default is true, change it to false if you experience issues
@@ -391,6 +402,8 @@ Purge:
     removeLimitedCreativesInventories: false
     # Do we need to remove the AntiXRayData/PlayerData/player file during purge process ?
     removeAntiXRayFile: false
+    # Do we need to remove permissions ?
+    removePermissions: false
 Protection:
     # Enable some servers protection ( country based login, antibot )
     enableProtection: false
